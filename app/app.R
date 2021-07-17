@@ -1,7 +1,6 @@
 library(shiny)
 library(dplyr)
 library(ggplot2)
-library(rsconnect)
 library(DT)
 library(shinyWidgets)
 source("readin2.R")
@@ -196,15 +195,6 @@ server <- function(input, output, session){
     
     
 }
-
-port <- Sys.getenv('PORT')
-shiny::runApp(
-  appDir = getwd(),
-  host = '0.0.0.0',
-  port = as.numeric(port)
-)
-
-
 
 shinyApp(ui = ui, server = server)
 
