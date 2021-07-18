@@ -1,9 +1,9 @@
 library(shiny)
 library(dplyr)
 library(ggplot2)
-library(rsconnect)
 library(DT)
 library(shinyWidgets)
+library(rsconnect)
 source("readin2.R")
 
 
@@ -366,8 +366,6 @@ output$spray_chart <- renderPlot({
 
 
 }
-
-
 
 
 shinyApp(ui = ui, server = server)
