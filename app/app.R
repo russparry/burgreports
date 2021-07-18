@@ -3,7 +3,6 @@ library(dplyr)
 library(ggplot2)
 library(DT)
 library(shinyWidgets)
-library(rsconnect)
 source("readin2.R")
 
 
