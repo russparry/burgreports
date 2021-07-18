@@ -9,6 +9,18 @@ source("readin2.R")
 
 BurgSpec$Date <- as.Date(BurgSpec$Date)
 
+fair <- subset(BurgSpecH, PitchCall == "InPlay")
+
+fair$direct <- fair$Bearing + 90
+
+fair$x <- fair$Distance * (-cos(fair$direct*pi/180))
+
+fair$y <- fair$Distance * (sin(fair$direct*pi/180))
+
+bases <- data.frame(xl=c(0,90/sqrt(2),0,-90/sqrt(2),0),
+                    yl=c(0,90/sqrt(2), 2 * 90/sqrt(2), 90/sqrt(2), 0))
+
+
 ui <- fluidPage(
   HTML('
        <img src="sburger.png", height="185px", width="200px",
@@ -69,7 +81,56 @@ ui <- fluidPage(
              )   
       
     ),
-    tabPanel("All Tracked Games",
+    tabPanel("Hitters", sidebarLayout(
+      
+      sidebarPanel(
+        
+        selectInput(inputId = "BatterInput", label = "Select Batter", choices = sort(unique(BurgSpecH$Batter))),
+        
+        HTML('<img src="hburger.png", height="185px", width="200px", style="display: block; margin-left: auto; margin-right: auto;"/>')
+        
+        
+        
+      ),
+      mainPanel(
+        tabsetPanel(
+          
+          tabPanel("Zone Report", br(),
+                   
+                   sidebarLayout(
+                     sidebarPanel(
+                       pickerInput(inputId = "PitchhInput", label = "Select Pitch", 
+                                   choices = ""),
+                       
+                       selectInput(inputId = "ReshInput", label = "Pitch Result", 
+                                   choices = "")
+                       
+                     ),
+                     mainPanel(
+                       plotOutput("strike_zoneH")
+                     )
+                     
+                   )
+                   
+          ),
+          tabPanel("Spray Chart", br(),
+                   sidebarLayout(
+                     sidebarPanel(
+                       
+                       pickerInput(inputId = "HitInput", label = "Hit Result",
+                                   choices = "")
+                     ),
+                     mainPanel(
+                       plotOutput("spray_chart")
+                     )
+                   )
+                   
+          )
+        )
+        
+      )
+      
+    )   
              
              )
     
@@ -77,6 +138,8 @@ ui <- fluidPage(
     
     
 )
+
+
 
 
 server <- function(input, output, session){
@@ -92,6 +155,18 @@ server <- function(input, output, session){
                                  choices = sort(c(unique((BurgSpec$PitchCall[BurgSpec$Pitcher == input$PitcherInput])), "All"))))
   
 
+  observeEvent(input$BatterInput, 
+               updatePickerInput(session, inputId = "PitchhInput", label = "Select Pitch",
+                                 choices = sort(c(unique((BurgSpecH$TaggedPitchType[BurgSpecH$Batter == input$BatterInput])), "All"))))
+  observeEvent(input$BatterInput, 
+               updateSelectInput(session, inputId = "ReshInput", label = "Select Result", 
+                                 choices = sort(c(unique((BurgSpecH$PitchCall[BurgSpecH$Batter == input$BatterInput])), "All"))))
+  
+  observeEvent(input$BatterInput, 
+               updatePickerInput(session, inputId = "HitInput", label = "Select Hit Result", 
+                                 choices = sort(c(unique((BurgSpecH$PlayResult[BurgSpecH$Batter == input$BatterInput])), "All" ))))
+  
+  
   
   
   output$pitcher_sum <- renderDataTable({
@@ -195,14 +270,103 @@ server <- function(input, output, session){
     }, width = 800, height = 450)
     
     
+
+
+output$strike_zoneH <- renderPlot({
+  dataFilter <- reactive({
+    if(input$PitchhInput == "All" && input$ReshInput == "All"){
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput)
+    }
+    else if(input$PitchhInput == "All" && input$ReshInput != "All"){
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput,
+               PitchCall == input$ReshInput)
+    }
+    else if(input$PitchhInput != "All" && input$ReshInput == "All"){
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, 
+               TaggedPitchType == input$PitchhInput)
+    }
+    else if(input$PitchhInput == "All" && input$ReshInput == "All"){
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput)
+    }
+    else if(input$PitchhInput != "All" && input$ReshInput != "All"){
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, 
+               PitchCall == input$ReshInput, TaggedPitchType == input$PitchhInput)
+    }
+    else if(input$PitchhInput == "All" && input$ReshInput != "All"){
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput,
+               PitchCall == input$ReshInput)
+    }
+    else if(input$PitchInput != "All" && input$ResInput == "All"){
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, TaggedPitchType == input$PitchhInput)
+    }
+    else{
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, 
+               TaggedPitchType == input$PitchhInput, PitchCall == input$ReshInput)
+    }
+    
+  })
+  
+  
+  ggplot(data = (if(nrow(dataFilter()) == 0)return() else(dataFilter())),
+         aes(x = PlateLocSide, y = PlateLocHeight, color = TaggedPitchType)) +
+    xlim(-3,3) + ylim(0,5) + labs(color= "", title = "Pitch Location") +
+    geom_rect(aes(xmin = -0.83, xmax = 0.83, ymin = 1.5, ymax = 3.5), alpha = 0, size = 1, color = "black") +
+    geom_segment(aes(x = -0.708, y = 0.15, xend = 0.708, yend = 0.15), size = 1, color = "black") + 
+    geom_segment(aes(x = -0.708, y = 0.3, xend = -0.708, yend = 0.15), size = 1, color = "black") + 
+    geom_segment(aes(x = -0.708, y = 0.3, xend = 0, yend = 0.5), size = 1, color = "black") + 
+    geom_segment(aes(x = 0, y = 0.5, xend = 0.708, yend = 0.3), size = 1, color = "black") + 
+    geom_segment(aes(x = 0.708, y = 0.3, xend = 0.708, yend = 0.15), size = 1, color = "black") +
+    geom_point(size = 3, na.rm = TRUE) +
+    theme_bw() + theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5)) +
+    theme(legend.position = "bottom", legend.text = element_text(size = 12), axis.title = element_blank())
+  
+}, width = 350, height = 450)
+
+
+output$spray_chart <- renderPlot({
+  
+  dataFilter <- reactive({
+    if(input$HitInput == "All"){
+      fair %>%
+        filter(Batter == input$BatterInput)
+    }
+    else{
+      fair %>%  
+        filter(Batter == input$BatterInput, PlayResult == input$HitInput)
+    }
+    
+  })
+  
+  
+  ggplot(data = dataFilter(), aes(x = x, y = y, color = PlayResult)) + 
+    xlim(-350,350) + 
+    ylim(0,500) + 
+    labs(color= "") +
+    geom_point(size = 3, na.rm = TRUE) +
+    geom_segment(x=0,xend=300,y=0,yend=300, color = "black") +  
+    geom_segment(x=0,xend=-300,y=0,yend=300, color = "black") + 
+    geom_segment(x=300,xend=175,y=300,yend=375, color = "black") +
+    geom_segment(x=175,xend=50,y=375,yend=400, color = "black") + 
+    geom_segment(x=50,xend=-50,y=400,yend=400, color = "black") + 
+    geom_segment(x=-50,xend=-175,y=400,yend=375, color = "black") + 
+    geom_segment(x=-175,xend=-300,y=375,yend=300, color = "black") +
+    labs(y = "Distance")
+    
+  
+}, width = 700, height = 500)
+
+
+
 }
 
-port <- Sys.getenv('PORT')
-shiny::runApp(
-  appDir = getwd(),
-  host = '0.0.0.0',
-  port = as.numeric(port)
-)
 
 
 
