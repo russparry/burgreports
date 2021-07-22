@@ -135,8 +135,10 @@ ui <- fluidPage(
     )   
              
              ),
-    tabPanel("Hitter Ranks min 100 Pitches tracked", br(), dataTableOutput("hitter_rank")),
-    tabPanel("Hitter Ranks min 20 Pitches tracked", br(), dataTableOutput("hitter_rank2"))
+    tabPanel("Hitter Ranks min 100 Pitches tracked", br(), "Top 10 showed. Click column header to see specific ranking", 
+             dataTableOutput("hitter_rank")),
+    tabPanel("Hitter Ranks min 20 Pitches tracked", br(), "Top 10 showed. Click column header to see specific ranking", 
+             dataTableOutput("hitter_rank2"))
     
   )
     
