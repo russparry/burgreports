@@ -22,13 +22,17 @@ bases <- data.frame(xl=c(0,90/sqrt(2),0,-90/sqrt(2),0),
 
 ui <- fluidPage(
   HTML('
+       
        <img src="sburger.png", height="185px", width="200px",
             style="display: block; margin-left: auto; 
-                 margin-right: auto;"/>'),
+                 margin-right: auto;"/>
+        
+       '),
   navbarPage(
-    HTML('<img src="sburger.png", height="18px", width="20px",
-            style="display: block; margin-left: auto; 
-                 margin-right: auto;"/>'),
+    HTML('
+    Burger Reportz </title> 
+         '),
+    
     tabPanel("Pitcher: Single Game",
              sidebarLayout(
                
@@ -70,23 +74,19 @@ ui <- fluidPage(
                             ),
                    tabPanel("Pitch Spin Rates", br(), plotOutput("boxplot2"))
                  )
-                 #h2("."),
-                 #tabsetPanel(
-                 # tabPanel("Pitch Uage", br(), selectInput(inputId = "ZoneInput", label = "Select Pitch", choices = sort(unique(BurgSpec$TaggedPitchType))), plotOutput("barhart"))
-                 
-                 #)
+                
                )
                
              )   
       
     ),
-    tabPanel("Hitters", sidebarLayout(
+    tabPanel("Hitters Individual", sidebarLayout(
       
       sidebarPanel(
         
         selectInput(inputId = "BatterInput", label = "Select Batter", choices = sort(unique(BurgSpecH$Batter))),
         
-        HTML('<img src="hburger.png", height="185px", width="200px", style="display: block; margin-left: auto; margin-right: auto;"/>')
+        HTML('<img src="fries.png", height="185px", width="200px", style="display: block; margin-left: auto; margin-right: auto;"/>')
         
         
         
@@ -124,14 +124,19 @@ ui <- fluidPage(
                      )
                    )
                    
-          )
+          ),
+          tabPanel("Hitter Summary", br(), dataTableOutput("hitter_sum"), br(), dataTableOutput("hitter_sum2"))
+          
         )
+        
         
       )
       
     )   
              
-             )
+             ),
+    tabPanel("Hitter Ranks min 100 Pitches tracked", br(), dataTableOutput("hitter_rank")),
+    tabPanel("Hitter Ranks min 20 Pitches tracked", br(), dataTableOutput("hitter_rank2"))
     
   )
     
@@ -167,6 +172,8 @@ server <- function(input, output, session){
   
   
   
+  ##  Pitcher Sum Table
+  
   
   output$pitcher_sum <- renderDataTable({
     table <- BurgSpec %>%
@@ -188,7 +195,7 @@ server <- function(input, output, session){
     
   })  
   
-  
+  ## Pitcher Strike Zone plot
   
   output$strike_zone <- renderPlot({
     dataFilter <- reactive({
@@ -253,8 +260,8 @@ server <- function(input, output, session){
   
   
   
-
-    
+##Spin rate distribution
+  
     output$boxplot2 <- renderPlot({
       
       dataFilter <- reactive ({
@@ -270,6 +277,8 @@ server <- function(input, output, session){
     
     
 
+## Hitter Zone Plot    
+    
 
 output$strike_zoneH <- renderPlot({
   dataFilter <- reactive({
@@ -330,6 +339,9 @@ output$strike_zoneH <- renderPlot({
 }, width = 350, height = 450)
 
 
+## Hitter Spray Chart
+
+
 output$spray_chart <- renderPlot({
   
   dataFilter <- reactive({
@@ -363,6 +375,118 @@ output$spray_chart <- renderPlot({
 }, width = 700, height = 500)
 
 
+##Hitter Summary Table
+
+output$hitter_sum <- renderDataTable({
+  table <- BurgSpecH %>%
+    filter(Batter == input$BatterInput) %>%
+    
+    
+    summarize('Number of Pitches' = n(),
+              'Max Exit Velo' = round(max(ExitSpeed, na.rm=TRUE),1),
+              'Avg Exit Velo' = round(mean(ExitSpeed, na.rm=TRUE),1),
+              'Median Exit Velo' = round(median(ExitSpeed, na.rm=TRUE),1),
+              'Max Distance' = round(max(Distance, na.rm=TRUE),0),
+              
+              'Ball %' = round(sum(BurgSpecH$isBall[BurgSpecH$Batter==input$BatterInput], na.rm=T)/
+                                 n()
+                               ,3)*100,
+              'Balls thrown' = sum(BurgSpecH$isBall[BurgSpecH$Batter==input$BatterInput], na.rm=T),
+              
+              'chase rate (all)' = 
+                round(sum(BurgSpecH$isChase[BurgSpecH$Batter==input$BatterInput], na.rm=T)/
+                        n()
+                      ,3)*100,
+              'chase rate (balls)' = 
+                round(sum(BurgSpecH$isChase[BurgSpecH$Batter==input$BatterInput], na.rm=T)/
+                        sum(BurgSpecH$isBall[BurgSpecH$Batter==input$BatterInput], na.rm=T)
+                      ,3)*100,
+              
+              'Whiff %' = round(sum(PitchCall %in% c("StrikeSwinging"))/
+                                  sum(PitchCall %in% c("StrikeSwinging", "StrikeCalled", "FoulBall", "InPlay")),3)*100
+    )
+  
+  tableFilter <- reactive({table})
+  datatable(tableFilter(), options = list(dom = 't', columnDefs = list(list(targets = 0, visible = FALSE)))) %>%
+    formatStyle(c(1,2), `border-left` = "solid 1px") %>% formatStyle(c(2,5,7), `border-right` = "solid 1px")
+  
+}) 
+
+
+
+output$hitter_rank <- renderDataTable({
+  table <- BurgSpecH %>%
+    
+    
+    
+    group_by('Batter' = Batter) %>%
+    
+    filter(n() > 100) %>%
+    
+    summarize(
+      'Pitches Seen' =n(),
+      'Balls thrown' = sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T),
+      'Max Exit Velo' = round(max(ExitSpeed, na.rm=TRUE),1),
+      'Avg Exit Velo' = round(mean(ExitSpeed, na.rm=TRUE),1),
+      'Median Exit Velo' = round(median(ExitSpeed, na.rm=TRUE),1),
+      'Max Distance' = round(max(Distance, na.rm=TRUE),0),
+      
+      
+      'chase rate (all)' = 
+        round(sum(BurgSpecH$isChase[BurgSpecH$Batter==Batter], na.rm=T)/
+                n()
+              ,3)*100,
+      'chase rate (balls)' = 
+        round(sum(BurgSpecH$isChase[BurgSpecH$Batter==Batter], na.rm=T)/
+                sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T)
+              ,3)*100,
+      
+      'Whiff %' = round(sum(PitchCall %in% c("StrikeSwinging"))/
+                          sum(PitchCall %in% c("StrikeSwinging", "StrikeCalled", "FoulBall", "InPlay")),3)*100
+    )
+  
+  tableFilter <- reactive({table})
+  datatable(tableFilter(), options = list(dom = 't', columnDefs = list(list(targets = 0, visible = FALSE)))) %>%
+    formatStyle(c(1,2), `border-left` = "solid 1px") %>% formatStyle(c(2,5,7), `border-right` = "solid 1px")
+  
+})
+
+output$hitter_rank2 <- renderDataTable({
+  table <- BurgSpecH %>%
+    
+    
+    
+    group_by('Batter' = Batter) %>%
+    
+    filter(n() > 20) %>%
+    
+    summarize(
+      'Pitches Seen' =n(),
+      'Balls thrown' = sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T),
+      'Max Exit Velo' = round(max(ExitSpeed, na.rm=TRUE),1),
+      'Avg Exit Velo' = round(mean(ExitSpeed, na.rm=TRUE),1),
+      'Median Exit Velo' = round(median(ExitSpeed, na.rm=TRUE),1),
+      'Max Distance' = round(max(Distance, na.rm=TRUE),0),
+      
+      
+      'chase rate (all)' = 
+        round(sum(BurgSpecH$isChase[BurgSpecH$Batter==Batter], na.rm=T)/
+                n()
+              ,3)*100,
+      'chase rate (balls)' = 
+        round(sum(BurgSpecH$isChase[BurgSpecH$Batter==Batter], na.rm=T)/
+                sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T)
+              ,3)*100,
+      
+      'Whiff %' = round(sum(PitchCall %in% c("StrikeSwinging"))/
+                          sum(PitchCall %in% c("StrikeSwinging", "StrikeCalled", "FoulBall", "InPlay")),3)*100
+    )
+  
+  tableFilter <- reactive({table})
+  datatable(tableFilter(), options = list(dom = 't', columnDefs = list(list(targets = 0, visible = FALSE)))) %>%
+    formatStyle(c(1,2), `border-left` = "solid 1px") %>% formatStyle(c(2,5,7), `border-right` = "solid 1px")
+  
+})
 
 }
 
