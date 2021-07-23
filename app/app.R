@@ -135,9 +135,11 @@ ui <- fluidPage(
     )   
              
              ),
-    tabPanel("Hitter Ranks min 100 Pitches tracked", br(), "Top 10 showed. Click column header to see specific ranking", 
+    tabPanel("Hitter Ranks min 100 Pitches tracked", br(), 
+             "Top 10 showed. Click column header to see specific ranking. Metrics assume consistent strike zone (20 inches wide, 1.5 to 3.5 ft high)", 
              dataTableOutput("hitter_rank")),
-    tabPanel("Hitter Ranks min 20 Pitches tracked", br(), "Top 10 showed. Click column header to see specific ranking", 
+    tabPanel("Hitter Ranks min 20 Pitches tracked", br(), 
+             "Top 10 showed. Click column header to see specific ranking. Metrics assume consistent strike zone (20 inches wide, 1.5 to 3.5 ft high)", 
              dataTableOutput("hitter_rank2"))
     
   )
@@ -405,7 +407,11 @@ output$hitter_sum <- renderDataTable({
                       ,3)*100,
               
               'Whiff %' = round(sum(PitchCall %in% c("StrikeSwinging"))/
-                                  sum(PitchCall %in% c("StrikeSwinging", "StrikeCalled", "FoulBall", "InPlay")),3)*100
+                                  sum(PitchCall %in% c("StrikeSwinging", "StrikeCalled", "FoulBall", "InPlay")),3)*100,
+              
+              'Barrel rate' = round(sum(BurgSpecH$isBarrel[BurgSpecH$Batter==input$BatterInput], na.rm=T)/
+                                      sum(BurgSpecH$isInPlay[BurgSpecH$Batter==input$BatterInput], na.rm=T)  
+                                    ,3)*100
     )
   
   tableFilter <- reactive({table})
@@ -427,7 +433,8 @@ output$hitter_rank <- renderDataTable({
     
     summarize(
       'Pitches Seen' =n(),
-      'Balls thrown' = sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T),
+      'Strike %' = round( (n() - sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T) )/n() ,3)*100,
+      'Ball %' = round(sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T) / n() , 3)*100,
       'Max Exit Velo' = round(max(ExitSpeed, na.rm=TRUE),1),
       'Avg Exit Velo' = round(mean(ExitSpeed, na.rm=TRUE),1),
       'Median Exit Velo' = round(median(ExitSpeed, na.rm=TRUE),1),
@@ -444,7 +451,11 @@ output$hitter_rank <- renderDataTable({
               ,3)*100,
       
       'Whiff %' = round(sum(PitchCall %in% c("StrikeSwinging"))/
-                          sum(PitchCall %in% c("StrikeSwinging", "StrikeCalled", "FoulBall", "InPlay")),3)*100
+                          sum(PitchCall %in% c("StrikeSwinging", "StrikeCalled", "FoulBall", "InPlay")),3)*100,
+      
+      'Barrel rate' = round(sum(BurgSpecH$isBarrel[BurgSpecH$Batter==Batter], na.rm=T)/
+                              sum(BurgSpecH$isInPlay[BurgSpecH$Batter==Batter], na.rm=T)  
+                            ,3)*100
     )
   
   tableFilter <- reactive({table})
@@ -464,7 +475,8 @@ output$hitter_rank2 <- renderDataTable({
     
     summarize(
       'Pitches Seen' =n(),
-      'Balls thrown' = sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T),
+      'Strike %' = round( (n() - sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T) )/n() ,3)*100,
+      'Ball %' = round(sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T) / n() , 3)*100,
       'Max Exit Velo' = round(max(ExitSpeed, na.rm=TRUE),1),
       'Avg Exit Velo' = round(mean(ExitSpeed, na.rm=TRUE),1),
       'Median Exit Velo' = round(median(ExitSpeed, na.rm=TRUE),1),
@@ -481,7 +493,11 @@ output$hitter_rank2 <- renderDataTable({
               ,3)*100,
       
       'Whiff %' = round(sum(PitchCall %in% c("StrikeSwinging"))/
-                          sum(PitchCall %in% c("StrikeSwinging", "StrikeCalled", "FoulBall", "InPlay")),3)*100
+                          sum(PitchCall %in% c("StrikeSwinging", "StrikeCalled", "FoulBall", "InPlay")),3)*100,
+      
+      'Barrel rate' = round(sum(BurgSpecH$isBarrel[BurgSpecH$Batter==Batter], na.rm=T)/
+                              sum(BurgSpecH$isInPlay[BurgSpecH$Batter==Batter], na.rm=T)  
+                            ,3)*100
     )
   
   tableFilter <- reactive({table})

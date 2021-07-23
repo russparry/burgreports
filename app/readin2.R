@@ -604,3 +604,7 @@ BurgSpecH$isBall <- ifelse(BurgSpecH$PlateLocSide>.83 | BurgSpecH$PlateLocSide<(
 BurgSpecH$isSwing <- ifelse(BurgSpecH$PitchCall == "StrikeSwinging" | BurgSpecH$PitchCall == "FoulBall" | BurgSpecH$PitchCall == "InPlay", TRUE, FALSE)
 
 BurgSpecH$isChase <- ifelse(BurgSpecH$isBall & BurgSpecH$isSwing, TRUE, FALSE)
+
+BurgSpecH$isBarrel <- ifelse(BurgSpecH$Angle<35 & BurgSpecH$Angle > 5 & BurgSpecH$ExitSpeed>=90, TRUE, FALSE)
+
+BurgSpecH$isInPlay <- ifelse(BurgSpecH$PitchCall == "InPlay", TRUE, FALSE)
