@@ -125,7 +125,22 @@ ui <- fluidPage(
                    )
                    
           ),
-          tabPanel("Hitter Summary", br(), dataTableOutput("hitter_sum"), br(), dataTableOutput("hitter_sum2"))
+          tabPanel("Hitter Summary", br(), dataTableOutput("hitter_sum"), br(), dataTableOutput("hitter_sum2")),
+          tabPanel("Contact Points", br(), 
+                   sidebarLayout(
+                     sidebarPanel(
+                       "Filter by:",
+                       selectInput(inputId = "ConPitchInput", label = "Pitch",
+                                   choices = ""),
+                       selectInput(inputId = "ConAngleInput", label = "Launch Angle",
+                                   choices = list("All", "<-10", "-10-0", "0-10", "10-20", "20-30", ">30"))
+                     ),
+                     mainPanel(
+                       plotOutput("contact_pts")
+                     )
+                   )
+                   
+                   )
           
         )
         
@@ -140,12 +155,26 @@ ui <- fluidPage(
              dataTableOutput("hitter_rank")),
     tabPanel("Hitter Ranks min 20 Pitches tracked", br(), 
              "Top 10 showed. Click column header to see specific ranking. Metrics assume consistent strike zone (20 inches wide, 1.5 to 3.5 ft high)", 
-             dataTableOutput("hitter_rank2"))
+             dataTableOutput("hitter_rank2")),
+    
+    tabPanel("Pitcher Release Points", br(), 
+             sidebarLayout(
+              sidebarPanel(
+                
+                selectInput(inputId = "ReleInput", label = "Pitcher",
+                            choices = sort(unique(BurgSpec$Pitcher)))
+              ),
+              mainPanel(
+                plotOutput("rel_plot")
+              )
+            )
     
   )
     
     
 )
+)
+
 
 
 
@@ -173,6 +202,14 @@ server <- function(input, output, session){
   observeEvent(input$BatterInput, 
                updatePickerInput(session, inputId = "HitInput", label = "Select Hit Result", 
                                  choices = sort(c(unique((BurgSpecH$PlayResult[BurgSpecH$Batter == input$BatterInput])), "All" ))))
+  
+  observeEvent(input$BatterInput,
+               updateSelectInput(session, inputId = "ConPitchInput", 
+                                 choices = sort(c(unique((BurgSpecH$TaggedPitchType[BurgSpecH$Batter == input$BatterInput])), "All"   ))))
+  
+  #observeEvent(input$BatterInput,
+   #            updateSelectInput(session, inputId = "ConAngleInput", 
+    #                             choices = sort(c(unique((BurgSpecH$LA[BurgSpecH$Batter == input$BatterInput])), "All"   ))))
   
   
   
@@ -386,7 +423,7 @@ output$hitter_sum <- renderDataTable({
     filter(Batter == input$BatterInput) %>%
     
     
-    summarize('Number of Pitches' = n(),
+    summarize('Pitches Tracked' = n(),
               'Max Exit Velo' = round(max(ExitSpeed, na.rm=TRUE),1),
               'Avg Exit Velo' = round(mean(ExitSpeed, na.rm=TRUE),1),
               'Median Exit Velo' = round(median(ExitSpeed, na.rm=TRUE),1),
@@ -432,7 +469,7 @@ output$hitter_rank <- renderDataTable({
     filter(n() > 100) %>%
     
     summarize(
-      'Pitches Seen' =n(),
+      'Pitches Tracked' =n(),
       'Strike %' = round( (n() - sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T) )/n() ,3)*100,
       'Ball %' = round(sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T) / n() , 3)*100,
       'Max Exit Velo' = round(max(ExitSpeed, na.rm=TRUE),1),
@@ -474,7 +511,7 @@ output$hitter_rank2 <- renderDataTable({
     filter(n() > 20) %>%
     
     summarize(
-      'Pitches Seen' =n(),
+      'Pitches Tracked' =n(),
       'Strike %' = round( (n() - sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T) )/n() ,3)*100,
       'Ball %' = round(sum(BurgSpecH$isBall[BurgSpecH$Batter==Batter], na.rm=T) / n() , 3)*100,
       'Max Exit Velo' = round(max(ExitSpeed, na.rm=TRUE),1),
@@ -505,6 +542,113 @@ output$hitter_rank2 <- renderDataTable({
     formatStyle(c(1,2), `border-left` = "solid 1px") %>% formatStyle(c(2,5,7), `border-right` = "solid 1px")
   
 })
+
+
+
+
+output$rel_plot <- renderPlot({
+  dataFilter <- reactive({
+    BurgSpec %>%
+       filter(Pitcher == input$ReleInput, TaggedPitchType != "Undefined")
+    
+  })
+  
+  
+  ggplot(data = (if(nrow(dataFilter()) == 0)return() else(dataFilter())),
+         aes(x = RelSide, y = RelHeight, color = TaggedPitchType)) +
+    xlim(-4,4) + ylim(0,8) + labs(color= "", title = "Release Point") +
+    geom_segment(aes(x = -0.708, y = 0.15, xend = 0.708, yend = 0.15), size = 1, color = "black") + 
+    geom_segment(aes(x = -0.708, y = 0.3, xend = -0.708, yend = 0.15), size = 1, color = "black") + 
+    geom_segment(aes(x = -0.708, y = 0.3, xend = 0, yend = 0.5), size = 1, color = "black") + 
+    geom_segment(aes(x = 0, y = 0.5, xend = 0.708, yend = 0.3), size = 1, color = "black") + 
+    geom_segment(aes(x = 0.708, y = 0.3, xend = 0.708, yend = 0.15), size = 1, color = "black") +
+    geom_point(size = 2, na.rm = TRUE) +
+    theme_bw() + theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5)) +
+    theme(legend.position = "bottom", legend.text = element_text(size = 12), axis.title = element_blank())
+  
+}, width = 350, height = 450)
+
+
+
+output$contact_pts <- renderPlot({
+  dataFilter <- reactive({
+    
+    if(input$ConPitchInput == "All" & input$ConAngleInput == "All"){
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, PitchCall == "InPlay")
+      
+    } 
+    else if(input$ConPitchInput == "All" & input$ConAngleInput == "<-10") {
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, PitchCall == "InPlay", Angle < -10)
+      
+    } 
+    else if(input$ConPitchInput == "All" & input$ConAngleInput == "-10-0") {
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, PitchCall == "InPlay", -10 < Angle, Angle < 0)
+    }
+    
+    else if(input$ConPitchInput == "All" & input$ConAngleInput == "0-10") {
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, PitchCall == "InPlay", 0 < Angle, Angle < 10)
+    }
+    
+    else if(input$ConPitchInput == "All" & input$ConAngleInput == "10-20") {
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, PitchCall == "InPlay", 10 < Angle, Angle < 20)
+    }
+    
+    else if(input$ConPitchInput == "All" & input$ConAngleInput == "20-30") {
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, PitchCall == "InPlay", 20 < Angle, Angle < 30)
+    }
+    
+    else if(input$ConPitchInput == "All" & input$ConAngleInput == ">30") {
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, PitchCall == "InPlay", 30 < Angle)
+    }
+    
+    else if(input$ConPitchInput != "All" & input$ConAngleInput == ">30") {
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, PitchCall == "InPlay", 30 < Angle, TaggedPitchType == input$ConPitchInput)
+    }
+    else if(input$ConPitchInput != "All" & input$ConAngleInput == "20-30") {
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, PitchCall == "InPlay", 20 < Angle, Angle < 30, TaggedPitchType == input$ConPitchInput)
+    }
+    else if(input$ConPitchInput != "All" & input$ConAngleInput == "10-20") {
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, PitchCall == "InPlay", 10 < Angle, Angle < 20, TaggedPitchType == input$ConPitchInput)
+    }
+    else if(input$ConPitchInput != "All" & input$ConAngleInput == "0-10") {
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, PitchCall == "InPlay", 0 < Angle, Angle < 10, TaggedPitchType == input$ConPitchInput)
+    }
+    else if(input$ConPitchInput != "All" & input$ConAngleInput == "-10-0") {
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, PitchCall == "InPlay", -10 < Angle, Andgle < 0, TaggedPitchType == input$ConPitchInput)
+    }
+    else if(input$ConPitchInput != "All" & input$ConAngleInput == "<-10") {
+      BurgSpecH %>%
+        filter(Batter == input$BatterInput, PitchCall == "InPlay", Angle < -10, TaggedPitchType == input$ConPitchInput)
+    }
+    
+  })
+  
+  
+  ggplot(data = (if(nrow(dataFilter()) == 0)return() else(dataFilter())),
+         aes(x = ContactPositionZ, y = ContactPositionX, color = TaggedPitchType)) +
+    xlim(-4,4) + ylim(-4,4) + labs(color= "", title = "Contact Point") +
+     geom_segment(aes(x = -.708, y = .708, xend = .708, yend = .708), size = 1, color = "black") + 
+     geom_segment(aes(x = -.708, y = .708, xend = -.708, yend = 0), size = 1, color = "black") + 
+     geom_segment(aes(x = 0.708, y = .708, xend = .708, yend = 0), size = 1, color = "black") + 
+     geom_segment(aes(x = 0, y = -.708, xend = 0.708, yend = 0), size = 1, color = "black") + 
+     geom_segment(aes(x = 0, y = -0.708, xend = -0.708, yend = 0), size = 1, color = "black") +
+    geom_point(size = 4, na.rm = TRUE) +
+    theme_bw() + theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5)) +
+    theme(legend.position = "bottom", legend.text = element_text(size = 12), axis.title = element_blank())
+  
+}, width = 500, height = 500)
 
 }
 
