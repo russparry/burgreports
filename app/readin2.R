@@ -599,7 +599,7 @@ BurgSpec <- subset(taketen, PitcherTeam=="SPA_B")
 
 BurgSpecH <- subset(taketen, PitcherTeam !="SPA_B")
 
-BurgSpecH$isBall <- ifelse(BurgSpecH$PlateLocSide>.83 | BurgSpecH$PlateLocSide<(-.83) | BurgSpecH$PlateLocHeight>3.5 | BurgSpecH$PlateLocHeight<1.5, TRUE, FALSE)
+BurgSpecH$isBall <- ifelse(BurgSpecH$PlateLocSide>1 | BurgSpecH$PlateLocSide<(-1) | BurgSpecH$PlateLocHeight>3.8 | BurgSpecH$PlateLocHeight<1.2, TRUE, FALSE)
 
 BurgSpecH$isSwing <- ifelse(BurgSpecH$PitchCall == "StrikeSwinging" | BurgSpecH$PitchCall == "FoulBall" | BurgSpecH$PitchCall == "InPlay", TRUE, FALSE)
 
