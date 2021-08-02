@@ -25,6 +25,20 @@ Game22 <- read_excel("Lexington_06_28.xlsx")
 Game23 <- read_excel("Macon_06_29.xlsx")
 Game24 <- read_excel("Macon_07_11.xlsx")
 
+
+Game25 <- read_excel("Macon_07_23.xlsx")
+Game26 <- read_excel("Macon_07_24.xlsx")
+Game27 <- read_excel("Macon_07_31.xlsx")
+Game28 <- read_excel("Savannah_07_17.xlsx")
+Game29 <- read_excel("Savannah_07_22.xlsx")
+Game30 <- read_excel("Lexington_07_25.xlsx")
+Game31 <- read_excel("Lexington_07_29.xlsx")
+Game32 <- read_excel("Lexington_07_30.xlsx")
+Game33 <- read_excel("ForestCity_07_28.xlsx")
+Game33 <- read_excel("ForestCity_07_16.xlsx")
+
+
+
 PitcherSpec1 <- Game1[c("Date", 
                         "Pitcher",
                         "Batter",
@@ -559,6 +573,221 @@ twentyfour <- Game24[c("Date",
 
 
 
+twentyfive <- Game25[c("Date", 
+                       "Pitcher",
+                       "Batter",
+                       "TaggedPitchType", 
+                       "RelSpeed", 
+                       "SpinRate" , 
+                       "PitcherTeam", 
+                       "Balls", 
+                       "Strikes", 
+                       "PitchCall",  
+                       "PlayResult", 
+                       "RelHeight", 
+                       "RelSide", 
+                       "PlateLocHeight", 
+                       "PlateLocSide", 
+                       "ExitSpeed",
+                       "BatterSide",
+                       "ContactPositionX", "ContactPositionZ",
+                       "Angle",
+                       "Direction",
+                       "Bearing",
+                       "Distance")]
+
+twentysix <- Game26[c("Date", 
+                       "Pitcher",
+                       "Batter",
+                       "TaggedPitchType", 
+                       "RelSpeed", 
+                       "SpinRate" , 
+                       "PitcherTeam", 
+                       "Balls", 
+                       "Strikes", 
+                       "PitchCall",  
+                       "PlayResult", 
+                       "RelHeight", 
+                       "RelSide", 
+                       "PlateLocHeight", 
+                       "PlateLocSide", 
+                       "ExitSpeed",
+                       "BatterSide",
+                       "ContactPositionX", "ContactPositionZ",
+                       "Angle",
+                       "Direction",
+                       "Bearing",
+                       "Distance")]
+
+twentyseven <- Game27[c("Date", 
+                       "Pitcher",
+                       "Batter",
+                       "TaggedPitchType", 
+                       "RelSpeed", 
+                       "SpinRate" , 
+                       "PitcherTeam", 
+                       "Balls", 
+                       "Strikes", 
+                       "PitchCall",  
+                       "PlayResult", 
+                       "RelHeight", 
+                       "RelSide", 
+                       "PlateLocHeight", 
+                       "PlateLocSide", 
+                       "ExitSpeed",
+                       "BatterSide",
+                       "ContactPositionX", "ContactPositionZ",
+                       "Angle",
+                       "Direction",
+                       "Bearing",
+                       "Distance")]
+
+twentyeight <- Game28[c("Date", 
+                       "Pitcher",
+                       "Batter",
+                       "TaggedPitchType", 
+                       "RelSpeed", 
+                       "SpinRate" , 
+                       "PitcherTeam", 
+                       "Balls", 
+                       "Strikes", 
+                       "PitchCall",  
+                       "PlayResult", 
+                       "RelHeight", 
+                       "RelSide", 
+                       "PlateLocHeight", 
+                       "PlateLocSide", 
+                       "ExitSpeed",
+                       "BatterSide",
+                       "ContactPositionX", "ContactPositionZ",
+                       "Angle",
+                       "Direction",
+                       "Bearing",
+                       "Distance")]
+
+twentynine <- Game29[c("Date", 
+                       "Pitcher",
+                       "Batter",
+                       "TaggedPitchType", 
+                       "RelSpeed", 
+                       "SpinRate" , 
+                       "PitcherTeam", 
+                       "Balls", 
+                       "Strikes", 
+                       "PitchCall",  
+                       "PlayResult", 
+                       "RelHeight", 
+                       "RelSide", 
+                       "PlateLocHeight", 
+                       "PlateLocSide", 
+                       "ExitSpeed",
+                       "BatterSide",
+                       "ContactPositionX", "ContactPositionZ",
+                       "Angle",
+                       "Direction",
+                       "Bearing",
+                       "Distance")]
+
+thirty <- Game30[c("Date", 
+                       "Pitcher",
+                       "Batter",
+                       "TaggedPitchType", 
+                       "RelSpeed", 
+                       "SpinRate" , 
+                       "PitcherTeam", 
+                       "Balls", 
+                       "Strikes", 
+                       "PitchCall",  
+                       "PlayResult", 
+                       "RelHeight", 
+                       "RelSide", 
+                       "PlateLocHeight", 
+                       "PlateLocSide", 
+                       "ExitSpeed",
+                       "BatterSide",
+                       "ContactPositionX", "ContactPositionZ",
+                       "Angle",
+                       "Direction",
+                       "Bearing",
+                       "Distance")]
+
+thirtyone <- Game31[c("Date", 
+                       "Pitcher",
+                       "Batter",
+                       "TaggedPitchType", 
+                       "RelSpeed", 
+                       "SpinRate" , 
+                       "PitcherTeam", 
+                       "Balls", 
+                       "Strikes", 
+                       "PitchCall",  
+                       "PlayResult", 
+                       "RelHeight", 
+                       "RelSide", 
+                       "PlateLocHeight", 
+                       "PlateLocSide", 
+                       "ExitSpeed",
+                       "BatterSide",
+                       "ContactPositionX", "ContactPositionZ",
+                       "Angle",
+                       "Direction",
+                       "Bearing",
+                       "Distance")]
+
+thirtytwo <- Game32[c("Date", 
+                       "Pitcher",
+                       "Batter",
+                       "TaggedPitchType", 
+                       "RelSpeed", 
+                       "SpinRate" , 
+                       "PitcherTeam", 
+                       "Balls", 
+                       "Strikes", 
+                       "PitchCall",  
+                       "PlayResult", 
+                       "RelHeight", 
+                       "RelSide", 
+                       "PlateLocHeight", 
+                       "PlateLocSide", 
+                       "ExitSpeed",
+                       "BatterSide",
+                       "ContactPositionX", "ContactPositionZ",
+                       "Angle",
+                       "Direction",
+                       "Bearing",
+                       "Distance")]
+
+thirtythree <- Game33[c("Date", 
+                       "Pitcher",
+                       "Batter",
+                       "TaggedPitchType", 
+                       "RelSpeed", 
+                       "SpinRate" , 
+                       "PitcherTeam", 
+                       "Balls", 
+                       "Strikes", 
+                       "PitchCall",  
+                       "PlayResult", 
+                       "RelHeight", 
+                       "RelSide", 
+                       "PlateLocHeight", 
+                       "PlateLocSide", 
+                       "ExitSpeed",
+                       "BatterSide",
+                       "ContactPositionX", "ContactPositionZ",
+                       "Angle",
+                       "Direction",
+                       "Bearing",
+                       "Distance")]
+
+
+
+
+
+
+
+
+
 
 Comb1 <- rbind(PitcherSpec1, PitcherSpec2) 
 Comb2 <- rbind(PitcherSpec3, PitcherSpec4) 
@@ -595,9 +824,20 @@ takeeight <- rbind(takeseven, twentytwo)
 takenine <- rbind(takeeight, twentythree)
 taketen <- rbind(takenine, twentyfour)
 
-BurgSpec <- subset(taketen, PitcherTeam=="SPA_B")
+takeeleven <- rbind(taketen, twentyfive)
+takeeleven <- rbind(takeeleven, twentysix)
+takeeleven <- rbind(takeeleven, twentyseven)
+takeeleven <- rbind(takeeleven, twentyeight)
+takeeleven <- rbind(takeeleven, twentynine)
+takeeleven <- rbind(takeeleven, thirty)
+takeeleven <- rbind(takeeleven, thirtyone)
+takeeleven <- rbind(takeeleven, thirtytwo)
+takeeleven <- rbind(takeeleven, thirtythree)
 
-BurgSpecH <- subset(taketen, PitcherTeam !="SPA_B")
+
+BurgSpec <- subset(takeeleven, PitcherTeam=="SPA_B")
+
+BurgSpecH <- subset(takeeleven, PitcherTeam !="SPA_B")
 
 BurgSpecH$isBall <- ifelse(BurgSpecH$PlateLocSide>1 | BurgSpecH$PlateLocSide<(-1) | BurgSpecH$PlateLocHeight>3.8 | BurgSpecH$PlateLocHeight<1.2, TRUE, FALSE)
 
